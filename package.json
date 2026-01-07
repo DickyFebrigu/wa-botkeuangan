@@ -2,9 +2,9 @@
   "name": "wa-botkeuangan",
   "version": "1.0.0",
   "type": "module",
-  "main": "index.js",
+  "main": "index.cjs",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.cjs"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.17.16",
@@ -12,3 +12,4 @@
     "qrcode-terminal": "^0.12.0"
   }
 }
+
