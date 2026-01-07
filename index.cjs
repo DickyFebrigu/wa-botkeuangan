@@ -10,9 +10,9 @@ const {
 } = require("@whiskeysockets/baileys");
 
 // =====================
-// HTTP server (Render Web Service keep-alive)
+// HTTP server (biar Fly hidup)
 // =====================
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 8080;
 http
   .createServer((req, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
@@ -27,7 +27,7 @@ function formatRupiah(n) {
   return Number(n || 0).toLocaleString("id-ID");
 }
 
-// In-memory data (akan reset kalau service restart)
+// In-memory data (reset kalau VM restart)
 const data = new Map();
 function getUser(jid) {
   if (!data.has(jid)) {
@@ -46,20 +46,20 @@ function getUser(jid) {
 // Main bot
 // =====================
 async function startBot() {
-  const AUTH_DIR = process.env.AUTH_DIR || "./auth"; // Render persistent disk: set AUTH_DIR=/var/data/auth
+  const AUTH_DIR = process.env.AUTH_DIR || "/data/auth"; // Fly volume
   console.log("🔐 Auth dir:", AUTH_DIR);
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
 
   const sock = makeWASocket({
     auth: state,
-    logger: Pino({ level: process.env.LOG_LEVEL || "info" }),
+    logger: Pino({ level: "info" }),
     printQRInTerminal: true,
   });
 
   sock.ev.on("creds.update", saveCreds);
 
-  sock.ev.on("connection.update", async (u) => {
+  sock.ev.on("connection.update", (u) => {
     const { connection, lastDisconnect, qr } = u;
 
     if (qr) {
@@ -73,29 +73,21 @@ async function startBot() {
 
     if (connection === "close") {
       const statusCode = lastDisconnect?.error?.output?.statusCode;
-      const reasonCode = lastDisconnect?.error?.output?.payload?.error;
-      const reasonMsg =
+      const reason =
         lastDisconnect?.error?.output?.payload?.message ||
         lastDisconnect?.error?.message ||
         lastDisconnect?.error;
 
       console.log("❌ BOT DISCONNECTED");
       console.log("StatusCode:", statusCode);
-      console.log("ReasonCode:", reasonCode);
-      console.log("Reason:", reasonMsg);
+      console.log("Reason:", reason);
 
-      // Auto reconnect kecuali kalau benar-benar logout / creds invalid
-      const shouldReconnect =
-        statusCode !== DisconnectReason.loggedOut &&
-        reasonCode !== "Unauthorized" &&
-        reasonCode !== "forbidden" &&
-        statusCode !== 401;
-
-      if (shouldReconnect) {
+      // reconnect otomatis kecuali logout
+      if (statusCode !== DisconnectReason.loggedOut) {
         console.log("🔄 Reconnecting in 3s...");
         setTimeout(() => startBot().catch(console.error), 3000);
       } else {
-        console.log("🧨 Logged out / unauthorized. Hapus folder auth lalu scan ulang QR.");
+        console.log("🧨 Logged out. Hapus auth & scan ulang.");
       }
     }
   });
@@ -118,19 +110,19 @@ async function startBot() {
       await sock.sendMessage(from, {
         text:
           `Halo 👋 aku Bot Keuangan.\n\n` +
-          `Format:\n` +
-          `1) /nama Febri\n` +
-          `2) /masuk 5000000 gaji\n` +
-          `3) /keluar 10000 pulsa\n` +
-          `4) /saldo\n` +
-          `5) /histori`,
+          `Perintah:\n` +
+          `/nama Febri\n` +
+          `/masuk 5000000 gaji\n` +
+          `/keluar 10000 pulsa\n` +
+          `/saldo\n` +
+          `/histori`,
       });
       return;
     }
 
     if (lower.startsWith("/nama ")) {
       user.name = t.slice(6).trim() || "teman";
-      await sock.sendMessage(from, { text: `✅ Nama diset: *${user.name}*` });
+      await sock.sendMessage(from, { text: `✅ Nama: *${user.name}*` });
       return;
     }
 
