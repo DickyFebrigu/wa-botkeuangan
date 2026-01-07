@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "main": "index.cjs",
-  "scripts": {
-    "start": "node index.cjs"
-  },
+  "scripts": { "start": "node index.cjs" },
   "dependencies": {
     "@whiskeysockets/baileys": "^6.17.16",
     "pino": "^8.17.0",
