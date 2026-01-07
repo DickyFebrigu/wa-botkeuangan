@@ -1,6 +1,11 @@
-import { default as makeWASocket, useMultiFileAuthState } from "@whiskeysockets/baileys";
-import Pino from "pino";
-import qrcode from "qrcode-terminal";
+const {
+  default: makeWASocket,
+  useMultiFileAuthState
+} = require("@whiskeysockets/baileys");
+
+const Pino = require("pino");
+const qrcode = require("qrcode-terminal");
+const http = require("http");
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./auth");
@@ -44,9 +49,7 @@ async function startBot() {
   });
 }
 
-startBot();
-import http from "http";
-
+// HTTP server biar Render tidak matiin service
 const port = process.env.PORT || 3000;
 http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
@@ -55,3 +58,4 @@ http.createServer((req, res) => {
   console.log("🌐 HTTP server listening on port", port);
 });
 
+startBot();
