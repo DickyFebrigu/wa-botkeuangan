@@ -1,4 +1,4 @@
-import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys";
+import { default as makeWASocket, useMultiFileAuthState } from "@whiskeysockets/baileys";
 import Pino from "pino";
 import qrcode from "qrcode-terminal";
 
